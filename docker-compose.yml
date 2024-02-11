@@ -1,0 +1,41 @@
+version: '3.0'
+services:
+    lara-app:
+        build:
+            context: ./
+            dockerfile: Dockerfile
+        restart: unless-stopped
+        tty:  true
+        ports:
+          - 8044:80
+        volumes:
+            - ./:/var/www
+        networks:
+            - lara-auth
+    lara-db:
+        image: mysql:8.0
+        restart: unless-stopped
+        ports:
+            - 3314:3306
+        environment:
+            MYSQL_DATABASE: ${DB_DATABASE}
+            MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+            MYSQL_USER: ${DB_USERNAME}
+            MYSQL_PASSWORD: ${DB_PASSWORD}
+            SERVICE_TAGS: dev
+            SERVICE_NAME: mysql
+        networks:
+            - lara-auth
+    lara-nginx:
+        image: nginx:1.17-alpine
+        restart: unless-stopped
+        ports:
+            - 8024:80
+        volumes:
+            - ./:/var/www
+            - ./nginx:/etc/nginx/conf.d/
+        networks:
+            - lara-auth
+networks:
+    lara-auth:
+        driver: bridge
